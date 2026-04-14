@@ -1,0 +1,19 @@
+# Python cache
+__pycache__/
+*.py[cod]
+
+# Virtual environments
+.venv/
+venv/
+
+# Environment files
+.env
+.env.*
+
+# Local generated index artifacts
+data/index/
+
+# Common local editor/system files
+.vscode/
+.idea/
+.DS_Store
