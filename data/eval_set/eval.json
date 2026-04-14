@@ -1,0 +1,102 @@
+[
+  {
+    "question": "你們退貨期限是幾天？",
+    "expected_source": "data/raw_docs/faq.md",
+    "is_unknown": false
+  },
+  {
+    "question": "退貨需要保留外包裝嗎？",
+    "expected_source": "data/raw_docs/faq.md",
+    "is_unknown": false
+  },
+  {
+    "question": "瑕疵商品的運費誰負擔？",
+    "expected_source": "data/raw_docs/faq.md",
+    "is_unknown": false
+  },
+  {
+    "question": "一般配送要幾天？",
+    "expected_source": "data/raw_docs/faq.md",
+    "is_unknown": false
+  },
+  {
+    "question": "偏遠地區通常會比較晚到嗎？",
+    "expected_source": "data/raw_docs/faq.md",
+    "is_unknown": false
+  },
+  {
+    "question": "你們支援哪些付款方式？",
+    "expected_source": "data/raw_docs/payment.md",
+    "is_unknown": false
+  },
+  {
+    "question": "ATM 轉帳最晚多久要完成？",
+    "expected_source": "data/raw_docs/payment.md",
+    "is_unknown": false
+  },
+  {
+    "question": "發票什麼時候開立？",
+    "expected_source": "data/raw_docs/payment.md",
+    "is_unknown": false
+  },
+  {
+    "question": "可以開統編發票嗎？",
+    "expected_source": "data/raw_docs/payment.md",
+    "is_unknown": false
+  },
+  {
+    "question": "新會員有折價券嗎？",
+    "expected_source": "data/raw_docs/member.md",
+    "is_unknown": false
+  },
+  {
+    "question": "折價券可以跟活動一起用嗎？",
+    "expected_source": "data/raw_docs/member.md",
+    "is_unknown": false
+  },
+  {
+    "question": "一張訂單能用幾張折價券？",
+    "expected_source": "data/raw_docs/member.md",
+    "is_unknown": false
+  },
+  {
+    "question": "忘記密碼怎麼辦？",
+    "expected_source": "data/raw_docs/member.md",
+    "is_unknown": false
+  },
+  {
+    "question": "客服上班時間是幾點到幾點？",
+    "expected_source": "data/raw_docs/support.md",
+    "is_unknown": false
+  },
+  {
+    "question": "客服通常多久回覆？",
+    "expected_source": "data/raw_docs/support.md",
+    "is_unknown": false
+  },
+  {
+    "question": "商品保固多久？",
+    "expected_source": "data/raw_docs/support.md",
+    "is_unknown": false
+  },
+  {
+    "question": "收到瑕疵品要怎麼申請售後？",
+    "expected_source": "data/raw_docs/support.md",
+    "is_unknown": false
+  },
+  {
+    "question": "請問你們有賣手機殼嗎？",
+    "expected_source": "",
+    "is_unknown": true
+  },
+  {
+    "question": "你們門市地址在哪裡？",
+    "expected_source": "",
+    "is_unknown": true
+  },
+  {
+    "question": "有提供海外配送到加拿大嗎？",
+    "expected_source": "",
+    "is_unknown": true
+  }
+]
