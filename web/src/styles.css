@@ -49,7 +49,8 @@ body {
 .messages {
   padding: 20px;
   overflow-y: auto;
-  display: grid;
+  display: flex;
+  flex-direction: column;
   gap: 12px;
 }
 
@@ -58,6 +59,7 @@ body {
   padding: 12px 14px;
   border-radius: 14px;
   line-height: 1.4;
+  align-self: flex-start;
 }
 
 .bubble p {
@@ -66,13 +68,13 @@ body {
 }
 
 .bubble.user {
-  justify-self: end;
+  align-self: flex-end;
   background: #1d4ed8;
   color: #ffffff;
 }
 
 .bubble.assistant {
-  justify-self: start;
+  align-self: flex-start;
   background: #eef3f8;
 }
 
