@@ -1,11 +1,24 @@
 import { useMemo, useState } from "react";
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || "http://localhost:8000";
+const SESSION_ID_KEY = "chat_session_id";
+
+const getOrCreateSessionId = () => {
+  const existing = window.localStorage.getItem(SESSION_ID_KEY);
+  if (existing) return existing;
+
+  const created = typeof crypto !== "undefined" && crypto.randomUUID
+    ? crypto.randomUUID().replace(/-/g, "")
+    : `${Date.now()}${Math.random().toString(16).slice(2)}`;
+  window.localStorage.setItem(SESSION_ID_KEY, created);
+  return created;
+};
 
 function App() {
   const [message, setMessage] = useState("");
   const [isSending, setIsSending] = useState(false);
   const [error, setError] = useState("");
+  const [sessionId, setSessionId] = useState(() => getOrCreateSessionId());
   const [messages, setMessages] = useState([
     {
       role: "assistant",
@@ -30,7 +43,7 @@ function App() {
       const response = await fetch(`${API_BASE_URL}/chat`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ message: trimmed }),
+        body: JSON.stringify({ message: trimmed, session_id: sessionId }),
       });
 
       if (!response.ok) {
@@ -38,6 +51,10 @@ function App() {
       }
 
       const data = await response.json();
+      if (typeof data.session_id === "string" && data.session_id.trim()) {
+        setSessionId(data.session_id);
+        window.localStorage.setItem(SESSION_ID_KEY, data.session_id);
+      }
       setMessages((prev) => [
         ...prev,
         {

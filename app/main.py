@@ -1,13 +1,17 @@
 from __future__ import annotations
 
+import logging
+
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
 from app.api.chat import router as chat_router
 from app.core.config import CORS_ALLOW_ORIGINS
+from app.services.memory import check_memory_backend
 from app.services.rag import preload_rag_resources
 
 app = FastAPI(title="Local AI Customer Support API")
+logger = logging.getLogger("uvicorn.error")
 
 app.add_middleware(
     CORSMiddleware,
@@ -29,3 +33,5 @@ def health() -> dict[str, str]:
 @app.on_event("startup")
 def startup() -> None:
     preload_rag_resources()
+    info = check_memory_backend()
+    logger.info("memory_backend_ready=%s", info)

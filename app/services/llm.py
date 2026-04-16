@@ -16,15 +16,25 @@ logger = logging.getLogger("uvicorn.error")
 def generate_answer_with_ollama(
     question: str,
     contexts: list[dict[str, Any]],
+    history: list[dict[str, str]] | None = None,
     request_id: str | None = None,
 ) -> str:
     """使用本地 Ollama 根據檢索片段產生有依據的回答。"""
     context_text = "\n\n".join(
         [f"[{i + 1}] ({c['source']}::{c['id']})\n{c['text']}" for i, c in enumerate(contexts)]
     )
+    history_text = ""
+    if history:
+        lines: list[str] = []
+        for turn in history[-12:]:
+            role = "使用者" if turn["role"] == "user" else "助理"
+            lines.append(f"{role}：{turn['text']}")
+        history_text = "\n".join(lines)
+
     prompt = (
         "你是客服助理。只能根據提供的內容回答，不可臆測。\n"
         f"若資訊不足，請只回覆：{FALLBACK_MESSAGE}\n\n"
+        f"最近對話（可用於理解代詞與追問語境）：\n{history_text or '（無）'}\n\n"
         f"問題：{question}\n\n"
         f"內容：\n{context_text}\n\n"
         "請用繁體中文客服口吻回答，語氣自然、簡潔、好懂。\n"

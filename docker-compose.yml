@@ -9,10 +9,14 @@ services:
     command: uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload
     environment:
       - ORDER_API_BASE_URL=http://mock-api:9000
+      - REDIS_URL=redis://redis:6379/0
+      - SESSION_HISTORY_TURN_LIMIT=4
+      - SESSION_TTL_SEC=7200
     ports:
       - "8000:8000"
     depends_on:
       - mock-api
+      - redis
 
   mock-api:
     build:
@@ -31,6 +35,11 @@ services:
       - "11434:11434"
     volumes:
       - ollama:/root/.ollama
+
+  redis:
+    image: redis:7.4-alpine
+    ports:
+      - "6379:6379"
 
   web:
     image: node:20-alpine

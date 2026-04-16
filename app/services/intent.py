@@ -51,7 +51,11 @@ def _parse_intent_response(raw: str) -> tuple[str, float]:
     return label, confidence
 
 
-def _resolve_intent_with_llm(message: str, request_id: str | None = None) -> tuple[str, float]:
+def _resolve_intent_with_llm(
+    message: str,
+    history: list[dict[str, str]] | None = None,
+    request_id: str | None = None,
+) -> tuple[str, float]:
     """二次判斷：強制 LLM 在 order_status / faq_query 中擇一。"""
     prompt = (
         "你是意圖仲裁器。只能回傳 JSON，格式為 "
@@ -60,6 +64,7 @@ def _resolve_intent_with_llm(message: str, request_id: str | None = None) -> tup
         "- 訂單狀態、物流進度、查貨 -> order_status\n"
         "- 產品政策、FAQ、規則說明 -> faq_query\n"
         "- 即使語意不清，也要選最可能的一個，不可輸出 clarify。\n\n"
+        f"最近對話：{_history_to_text(history)}\n"
         f"使用者訊息：{message}\n"
         "只輸出 JSON，不要其他文字。"
     )
@@ -94,7 +99,11 @@ def _resolve_intent_with_llm(message: str, request_id: str | None = None) -> tup
     return "clarify", confidence
 
 
-def classify_intent_with_ollama(message: str, request_id: str | None = None) -> tuple[str, float]:
+def classify_intent_with_ollama(
+    message: str,
+    history: list[dict[str, str]] | None = None,
+    request_id: str | None = None,
+) -> tuple[str, float]:
     """使用 Ollama 做意圖分類，回傳固定標籤與信心分數。"""
     prompt = (
         "你是意圖分類器。請回傳 JSON，格式為 "
@@ -103,6 +112,7 @@ def classify_intent_with_ollama(message: str, request_id: str | None = None) -> 
         "- 訂單狀態、物流進度、查貨 -> order_status\n"
         "- 產品政策、FAQ、規則說明 -> faq_query\n"
         "- 同時包含多種需求或語意不清 -> clarify\n\n"
+        f"最近對話：{_history_to_text(history)}\n"
         f"使用者訊息：{message}\n"
         "只輸出 JSON，不要其他文字。"
     )
@@ -139,18 +149,26 @@ def classify_intent_with_ollama(message: str, request_id: str | None = None) -> 
     return "clarify", 0.0
 
 
-def route_intent(message: str, request_id: str | None = None) -> tuple[str, float]:
+def route_intent(
+    message: str,
+    history: list[dict[str, str]] | None = None,
+    request_id: str | None = None,
+) -> tuple[str, float]:
     """根據使用者訊息判斷路由意圖，並回傳信心分數。"""
     has_order_id = bool(ORDER_ID_REGEX.search(message))
     if has_order_id:
         return "order_status", 1.0
 
-    label, confidence = classify_intent_with_ollama(message, request_id=request_id)
+    label, confidence = classify_intent_with_ollama(message, history=history, request_id=request_id)
     if label != "clarify" and confidence >= INTENT_CONFIDENCE_THRESHOLD:
         return label, confidence
 
     # 低信心或模型回 clarify 時，由 LLM 再做一次二選一仲裁。
-    resolve_label, resolve_confidence = _resolve_intent_with_llm(message, request_id=request_id)
+    resolve_label, resolve_confidence = _resolve_intent_with_llm(
+        message,
+        history=history,
+        request_id=request_id,
+    )
     if resolve_label in {"order_status", "faq_query"}:
         return resolve_label, max(confidence, resolve_confidence)
     return "clarify", max(confidence, resolve_confidence)
@@ -162,3 +180,13 @@ def extract_order_id(message: str) -> str | None:
     if not match:
         return None
     return match.group(0).upper()
+
+
+def _history_to_text(history: list[dict[str, str]] | None) -> str:
+    if not history:
+        return "（無）"
+    lines: list[str] = []
+    for turn in history[-12:]:
+        role = "user" if turn["role"] == "user" else "assistant"
+        lines.append(f"{role}: {turn['text']}")
+    return " | ".join(lines)
