@@ -17,3 +17,7 @@ data/index/
 .vscode/
 .idea/
 .DS_Store
+
+# Frontend build artifacts
+web/node_modules/
+web/dist/

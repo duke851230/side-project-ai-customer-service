@@ -1,0 +1,145 @@
+:root {
+  font-family: "Segoe UI", "Noto Sans TC", sans-serif;
+  color: #1c2430;
+  background-color: #f3f6fa;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+}
+
+.page {
+  min-height: 100vh;
+  padding: 24px 12px;
+  display: grid;
+  place-items: center;
+  background: radial-gradient(circle at top, #dce9ff, #f3f6fa 50%);
+}
+
+.chat-card {
+  width: min(900px, 100%);
+  height: min(90vh, 760px);
+  display: grid;
+  grid-template-rows: auto 1fr auto auto;
+  border-radius: 16px;
+  background: #ffffff;
+  box-shadow: 0 14px 40px rgba(9, 34, 66, 0.12);
+  overflow: hidden;
+}
+
+.chat-header {
+  padding: 20px;
+  border-bottom: 1px solid #e6ecf2;
+}
+
+.chat-header h1 {
+  margin: 0;
+  font-size: 1.25rem;
+}
+
+.chat-header p {
+  margin: 6px 0 0;
+  color: #64748b;
+}
+
+.messages {
+  padding: 20px;
+  overflow-y: auto;
+  display: grid;
+  gap: 12px;
+}
+
+.bubble {
+  max-width: 82%;
+  padding: 12px 14px;
+  border-radius: 14px;
+  line-height: 1.4;
+}
+
+.bubble p {
+  margin: 0;
+  white-space: pre-wrap;
+}
+
+.bubble.user {
+  justify-self: end;
+  background: #1d4ed8;
+  color: #ffffff;
+}
+
+.bubble.assistant {
+  justify-self: start;
+  background: #eef3f8;
+}
+
+.meta {
+  margin-top: 8px;
+  font-size: 0.83rem;
+  color: #475569;
+}
+
+.meta ul {
+  margin: 6px 0 0;
+  padding-left: 18px;
+}
+
+.error {
+  margin: 0;
+  padding: 0 20px 12px;
+  color: #b91c1c;
+  font-size: 0.9rem;
+}
+
+.composer {
+  border-top: 1px solid #e6ecf2;
+  padding: 14px;
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 10px;
+}
+
+.composer textarea {
+  width: 100%;
+  resize: vertical;
+  min-height: 52px;
+  max-height: 180px;
+  border: 1px solid #cdd7e3;
+  border-radius: 10px;
+  padding: 10px 12px;
+  font: inherit;
+}
+
+.composer button {
+  border: 0;
+  border-radius: 10px;
+  min-width: 90px;
+  padding: 0 16px;
+  background: #0f172a;
+  color: #ffffff;
+  font: inherit;
+  cursor: pointer;
+}
+
+.composer button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+@media (max-width: 720px) {
+  .page {
+    padding: 0;
+  }
+
+  .chat-card {
+    height: 100vh;
+    border-radius: 0;
+  }
+
+  .bubble {
+    max-width: 92%;
+  }
+}
