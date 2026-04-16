@@ -4,7 +4,7 @@ import os
 
 ORDER_API_BASE_URL = os.getenv("ORDER_API_BASE_URL", "http://localhost:9000")
 OLLAMA_BASE_URL = os.getenv("OLLAMA_BASE_URL", "http://ollama:11434")
-OLLAMA_MODEL = os.getenv("OLLAMA_MODEL", "qwen2.5:7b-instruct")
+OLLAMA_MODEL = os.getenv("OLLAMA_MODEL", "qwen2.5:3b")
 INTENT_LLM_TIMEOUT_SEC = float(os.getenv("INTENT_LLM_TIMEOUT_SEC", "20"))
 ANSWER_LLM_TIMEOUT_SEC = float(os.getenv("ANSWER_LLM_TIMEOUT_SEC", "120"))
 
