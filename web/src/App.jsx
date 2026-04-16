@@ -2,14 +2,24 @@ import { useMemo, useState } from "react";
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || "http://localhost:8000";
 const SESSION_ID_KEY = "chat_session_id";
+const WELCOME_MESSAGE = {
+  role: "assistant",
+  text: "你好，我可以幫你查訂單狀態或回答 FAQ。",
+  route: "welcome",
+  citations: [],
+};
+
+const createSessionId = () => (
+  typeof crypto !== "undefined" && crypto.randomUUID
+    ? crypto.randomUUID().replace(/-/g, "")
+    : `${Date.now()}${Math.random().toString(16).slice(2)}`
+);
 
 const getOrCreateSessionId = () => {
   const existing = window.localStorage.getItem(SESSION_ID_KEY);
   if (existing) return existing;
 
-  const created = typeof crypto !== "undefined" && crypto.randomUUID
-    ? crypto.randomUUID().replace(/-/g, "")
-    : `${Date.now()}${Math.random().toString(16).slice(2)}`;
+  const created = createSessionId();
   window.localStorage.setItem(SESSION_ID_KEY, created);
   return created;
 };
@@ -19,14 +29,7 @@ function App() {
   const [isSending, setIsSending] = useState(false);
   const [error, setError] = useState("");
   const [sessionId, setSessionId] = useState(() => getOrCreateSessionId());
-  const [messages, setMessages] = useState([
-    {
-      role: "assistant",
-      text: "你好，我可以幫你查訂單狀態或回答 FAQ。",
-      route: "welcome",
-      citations: [],
-    },
-  ]);
+  const [messages, setMessages] = useState([WELCOME_MESSAGE]);
 
   const canSend = useMemo(() => message.trim().length > 0 && !isSending, [message, isSending]);
 
@@ -71,12 +74,25 @@ function App() {
     }
   };
 
+  const startNewConversation = () => {
+    if (isSending) return;
+    const newSessionId = createSessionId();
+    setSessionId(newSessionId);
+    window.localStorage.setItem(SESSION_ID_KEY, newSessionId);
+    setMessage("");
+    setError("");
+    setMessages([WELCOME_MESSAGE]);
+  };
+
   return (
     <main className="page">
       <section className="chat-card">
         <header className="chat-header">
           <h1>AI Customer Service</h1>
           <p>Minimal React Chat UI</p>
+          <button type="button" onClick={startNewConversation} disabled={isSending}>
+            開始新對話
+          </button>
         </header>
 
         <div className="messages" aria-live="polite">
