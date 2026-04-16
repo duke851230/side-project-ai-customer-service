@@ -22,7 +22,7 @@ from app.services.intent import extract_order_id, route_intent
 from app.services.llm import generate_answer_with_ollama, postprocess_faq_answer
 from app.services.memory import append_session_turn, get_session_history
 from app.services.order import fetch_order
-from app.services.rag import retrieve_context
+from app.services.rag import retrieve_context, rewrite_query_with_history
 
 logger = logging.getLogger("uvicorn.error")
 router = APIRouter()
@@ -68,8 +68,17 @@ def answer_faq_query(
 ) -> ChatResponse:
     """處理 FAQ 路由：檢索、生成回答、附上引用來源。"""
     try:
+        retrieve_query = rewrite_query_with_history(message, history)
+        if retrieve_query != message:
+            logger.info(
+                "[req=%s] rag_query_rewritten original=%r rewritten=%r",
+                request_id,
+                message[:120],
+                retrieve_query[:220],
+            )
+
         t_retrieve = time.perf_counter()
-        contexts = retrieve_context(message, RAG_TOP_K, request_id=request_id)
+        contexts = retrieve_context(retrieve_query, RAG_TOP_K, request_id=request_id)
         logger.info("[req=%s] rag_total_ms=%.1f", request_id, elapsed_ms(t_retrieve))
     except FileNotFoundError:
         return ChatResponse(answer=f"{FALLBACK_MESSAGE}（尚未建立索引）", route="faq_query", citations=[])

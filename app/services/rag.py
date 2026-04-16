@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import json
 import logging
+import re
 import time
 from functools import lru_cache
 from pathlib import Path
@@ -15,6 +16,27 @@ from app.core.config import EMBEDDING_MODEL, RAG_INDEX_DIR
 from app.core.timing import elapsed_ms
 
 logger = logging.getLogger("uvicorn.error")
+FOLLOWUP_HINT_PATTERN = re.compile(
+    r"(它|他|它們|他們|這個|那個|那可以|那怎麼)",
+    re.IGNORECASE,
+)
+
+
+def _is_followup_like(text: str) -> bool:
+    clean = text.strip()
+    if not clean:
+        return False
+    return bool(FOLLOWUP_HINT_PATTERN.search(clean))
+
+
+def _find_anchor_topic(user_turns: list[str]) -> str:
+    """找最近一個「明確主題句」（非追問句）作為檢索錨點。"""
+    # 由近到遠找第一個非追問句，避免連續追問時主題漂移。
+    for turn in reversed(user_turns):
+        if not _is_followup_like(turn):
+            return turn
+    # 若全是追問句，退回最近一句。
+    return user_turns[-1] if user_turns else ""
 
 
 @lru_cache(maxsize=1)
@@ -76,3 +98,38 @@ def retrieve_context(question: str, top_k: int, request_id: str | None = None) -
         (results[0]["score"] if results else -1.0),
     )
     return results
+
+
+def rewrite_query_with_history(message: str, history: list[dict[str, str]] | None = None) -> str:
+    """將短追問改寫為可檢索查詢，補上最近主題，降低代詞造成的召回下降。"""
+    clean_message = message.strip()
+    if not clean_message or not history:
+        return clean_message
+
+    user_turns = [turn["text"].strip() for turn in history if turn.get("role") == "user" and turn.get("text")]
+    if not user_turns:
+        return clean_message
+
+    # 排除與當前輸入完全相同的尾端 turn，避免重覆污染錨點挑選。
+    while user_turns and user_turns[-1] == clean_message:
+        user_turns.pop()
+    if not user_turns:
+        return clean_message
+
+    # 僅在追問句時套用改寫，避免污染明確新問題。
+    if not _is_followup_like(clean_message):
+        return clean_message
+
+    anchor_topic = _find_anchor_topic(user_turns)
+    if not anchor_topic:
+        return clean_message
+
+    # 同時補上最近兩句 user 語境，降低單一錨點缺詞的風險。
+    recent_context = " / ".join(user_turns[-2:])[:180]
+    anchor_topic = anchor_topic[:120]
+    rewritten = (
+        f"{clean_message}\n"
+        f"主題錨點：{anchor_topic}\n"
+        f"近期語境：{recent_context}"
+    )
+    return rewritten.strip()
