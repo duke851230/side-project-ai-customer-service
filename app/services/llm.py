@@ -26,17 +26,20 @@ def generate_answer_with_ollama(
     history_text = ""
     if history:
         lines: list[str] = []
-        for turn in history[-12:]:
+        for turn in history[-6:]:
             role = "使用者" if turn["role"] == "user" else "助理"
             lines.append(f"{role}：{turn['text']}")
         history_text = "\n".join(lines)
 
     prompt = (
         "你是客服助理。只能根據提供的內容回答，不可臆測。\n"
+        "回答時以「當前問題」為最高優先，不要被最近對話帶偏。\n"
+        "最近對話僅可用於補代詞或省略主詞（例如：它、這個、那個）。\n"
+        "若最近對話與當前問題衝突，忽略最近對話，以當前問題與檢索內容為準。\n"
         f"若資訊不足，請只回覆：{FALLBACK_MESSAGE}\n\n"
-        f"最近對話（可用於理解代詞與追問語境）：\n{history_text or '（無）'}\n\n"
         f"問題：{question}\n\n"
         f"內容：\n{context_text}\n\n"
+        f"最近對話（僅供代詞消歧，非主要依據）：\n{history_text or '（無）'}\n\n"
         "請用繁體中文客服口吻回答，語氣自然、簡潔、好懂。\n"
         "格式要求：\n"
         "1) 先用一句話直接回答問題（可明確回答是/否/條件）。\n"
